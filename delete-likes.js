@@ -2,32 +2,24 @@
 
 /**
  * Halts execution for a certain amount of seconds.
- * https://stackoverflow.com/a/39914235
  */
 function sleep(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
-// Gets like buttons on posts you've thumbed up.
+// Gets the "View post" buttons for posts that require viewing before interacting.
+function getViewPostButtons() {
+    return document.querySelectorAll("button.artdeco-button.artdeco-button--inverse.artdeco-button--2.artdeco-button--secondary.interstitial-view-model-click-through-interstitial__button");
+}
+
+// Gets like buttons on posts you've reacted to.
 function getLikesOnPosts() {
     return document.querySelectorAll(".react-button__trigger.artdeco-button[aria-pressed=\"true\"]");
 }
 
-// Gets like buttons on comments you've thumbed up.
+// Gets like buttons on comments you've reacted to.
 function getLikesOnComments() {
     return document.querySelectorAll(".comments-comment-social-bar__like-action-button[aria-pressed=\"true\"]");
-}
-
-//
-function getDeleteCommentButtons() {
-    var buttons = [];
-    for (const span of document.querySelectorAll("span.mh4.comments-options-menu__text")) {
-        if (span.textContent.includes("Delete")) {
-            buttons.push(span);
-        }
-    }
-
-    return buttons;
 }
 
 // Forces click on "load more comments" buttons.
@@ -53,29 +45,37 @@ function loadMoreActivity() {
     loadPreviousReplies();
 }
 
-//
-function deleteActivity() {
-    var i;
+// Function to click "View post" buttons
+async function clickViewPostButtons() {
+    const viewPostButtons = getViewPostButtons();
+    for (let i = 0; i < viewPostButtons.length; i++) {
+        viewPostButtons[i].click();
+        await sleep(2);  // Wait for the post to load
+    }
+}
 
-    var likesOnPosts = getLikesOnPosts();
-    for (i = 0; i < likesOnPosts.length; i++) {
+// Function to delete activity (likes on posts and comments)
+function deleteActivity() {
+    let likesOnPosts = getLikesOnPosts();
+    for (let i = 0; i < likesOnPosts.length; i++) {
         console.log(likesOnPosts[i].click());
     }
 
-    var likesOnComments = getLikesOnComments();
-    for (i = 0; i < likesOnComments.length; i++) {
+    let likesOnComments = getLikesOnComments();
+    for (let i = 0; i < likesOnComments.length; i++) {
         console.log(likesOnComments[i].click());
     }
 }
 
-//
-var keepGoing = true;
+let keepGoing = true;
 async function init() {
     console.log("*** Starting activity deletion ***");
-    console.log(">>> Loading more activity")
+    console.log(">>> Loading more activity");
     loadMoreActivity();
     await sleep(2);
-    console.log(">>> Deleting loaded activity")
+    console.log(">>> Clicking 'View post' buttons");
+    await clickViewPostButtons();  // First, click "View post" buttons
+    console.log(">>> Deleting loaded activity");
     deleteActivity();
     if (keepGoing) {
         await sleep(5);
